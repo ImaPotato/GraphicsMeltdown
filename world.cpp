@@ -15,7 +15,6 @@ int octreeSize = 16;
 
 int activeModel = 0; // Which model is actively being drawn. Can be 1 or 2
 Octree<Particle> model0(octreeSize, NULL_PARTICLE);
-Octree<Particle> model1(octreeSize, NULL_PARTICLE);
 
 World::World() {
 	printf("World Created\n");
@@ -41,36 +40,47 @@ void World::LoadDefaultModel(){
 
 // UPDATING MODEL
 void World::UpdateModel(){
-	activeModel = !activeModel;
-
-	CalculatePositions();
-	CalculateTemperatures();
-	CalculateVelocities();
+	Octree<Particle> nextFrame(octreeSize, NULL_PARTICLE);
+	
+	CalculatePositions(nextFrame);
+	CalculateTemperatures(nextFrame);
+	CalculateVelocities(nextFrame);
+	
 }
 
-void World::CalculateTemperatures(){
+void World::CalculateTemperatures(Octree<Particle> nextFrame){
 	//do things
 	// TODO
 }
 
-void World::CalculateVelocities(){
+void World::CalculateVelocities(Octree<Particle> nextFrame){
 	//calculate things	
 	// TODO
 }
 
-void World::CalculatePositions(){
+void World::CalculatePositions(Octree<Particle> nextFrame){
 	//move things
 	// TODO
+	for (int z = 0; z < model.size(); z++){		
+		for(int y = 0; y < model.size(); y++){
+			for(int x = 0; x < model.size(); x++){
+				Particle p = model.at(x,y,z);
+				p.calculate(newPosition);
+				
+				
+				if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
+					p.Draw();
+				}
+			}
+		}		
+	}
 }
 
 // DRAWING TO SCREEN
 void World::Draw(){
 	UpdateModel();
 	printf("Drawing Model%d\n",activeModel);
-	if(activeModel==1)
-		DrawModel(model1);
-	else
-		DrawModel(model0); 
+	DrawModel(model); 
 }
 
 // NOTE: This version does not use z sclices so is not optimized but works
