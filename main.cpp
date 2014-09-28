@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "world.h"
+#include "main.h"
 
 // Global Variables
 GLuint g_mainWnd;
@@ -17,10 +18,20 @@ World world;
 #define ZOOM_RATE 1.0
 #define PAN_RATE 1.0
 
+const point2d origin = {0.0 , 0.0};
+
+int leftMouseState = GLUT_UP;
+int middleMouseState = GLUT_UP;
+int rightMouseState = GLUT_UP;
+point2d leftMouseDownPt = origin;
+point2d middleMouseDownPt = origin;
+point2d rightMouseDownPt = origin;
+
 #define UP 0
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
+
 float camX = 0.0;
 float camY = 0.0;
 float camZ = 100.0;
@@ -29,11 +40,14 @@ float camZ = 100.0;
 void SetLight() ;
 void SetCamera() ;
 void Display() ;
+
 void Mouse(int button, int state, int x, int y);
+void MouseMoved(int x, int y);
 void KeyPressed (unsigned char key, int x, int y);
 
 void Zoom(int in);
 void Pan(int dir);
+void ArcRotate(int x, int y);
 
 // MAIN
 int main(int argc, char** argv)
@@ -52,8 +66,8 @@ int main(int argc, char** argv)
 
     glutDisplayFunc(Display);
 	glutMouseFunc(Mouse);
-	glutKeyboardFunc(KeyPressed); 
-	
+	glutMotionFunc(MouseMoved);
+	glutKeyboardFunc(KeyPressed); 	
 	
 	SetLight();
 	SetCamera();
@@ -65,7 +79,28 @@ int main(int argc, char** argv)
 
 void Mouse(int button, int state, int x, int y)
 {
+	if(button == 0){
+		leftMouseState = state;
+		if(state==GLUT_DOWN){
+			leftMouseDownPt.x = x;
+			leftMouseDownPt.y = y;
+		}
+	} else if(button == 1){
+		middleMouseState = state;
+		if(state==GLUT_DOWN){
+			middleMouseDownPt.x = x;
+			middleMouseDownPt.y = y;
+		}
+	}
+}
 
+void MouseMoved(int x, int y){
+	if(leftMouseState==GLUT_DOWN){
+		// TODO
+	}
+	if(middleMouseState==GLUT_DOWN){
+		// TODO
+	}
 }
 
 void KeyPressed (unsigned char key, int x, int y)
@@ -167,6 +202,10 @@ void Zoom(int in){
 
 	SetCamera();
 	glutPostRedisplay();
+}
+
+void ArcRotate(int x, int y){
+
 }
 
 

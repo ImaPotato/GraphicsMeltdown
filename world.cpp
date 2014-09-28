@@ -26,6 +26,8 @@ void World::LoadModel(char* fileName){
 	// TODO
 }
 
+
+
 void World::LoadDefaultModel(){
 	activeModel = 0;
 	for (int z = 0; z < octreeSize; z++){		
