@@ -18,12 +18,12 @@ public:
 	void LoadDefaultModel();
 
 	void UpdateModel();
-	void CalculateTemperatures();
-	void CalculateVelocities();
-	void CalculatePositions();
+	void CalculateTemperatures(Octree<Particle>* nextFrame);
+	void CalculateVelocities(Octree<Particle>* nextFrame);
+	void CalculatePositions(Octree<Particle>* nextFrame);
 
 	void Draw();
-	void DrawModel(Octree<Particle> model);
+	void DrawModel();
 };
 
 

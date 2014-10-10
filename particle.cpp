@@ -77,3 +77,8 @@ float Particle::GetVZ(){
 	return vz;
 }
 
+void Particle::calculateNewPosition(){
+	x+=vx;
+	y+=vy;
+	z+=vz;
+}

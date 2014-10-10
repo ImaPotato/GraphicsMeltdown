@@ -26,6 +26,9 @@ public:
 	float GetVX();
 	float GetVY();
 	float GetVZ();
+	
+	
+	void calculateNewPosition();
 
 private:
 	float x, y, z; // Coords
