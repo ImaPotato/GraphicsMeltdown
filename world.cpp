@@ -47,9 +47,9 @@ void World::LoadDefaultModel(){
 void World::UpdateModel(){
 	Octree<Particle> nextFrame(octreeSize, NULL_PARTICLE);	
 	
-	CalculatePositions(&nextFrame);		
+	CalculatePositions(&nextFrame);
 	CalculateTemperatures(&nextFrame);
-	CalculateVelocities(&nextFrame);		
+	CalculateVelocities(&nextFrame);
 	
 	model = nextFrame;
 }
