@@ -47,44 +47,27 @@ void World::LoadDefaultModel(){
 void World::UpdateModel(){
 	Octree<Particle> nextFrame(octreeSize, NULL_PARTICLE);	
 	
-	CalculatePositions(&nextFrame);
-	CalculateTemperatures(&nextFrame);
-	CalculateVelocities(&nextFrame);
-	
-	model = nextFrame;
-}
-
-void World::CalculatePositions(Octree<Particle>* nextFrame){
-	// TODO
 	for (int z = 0; z < model.size(); z++){		
 		for(int y = 0; y < model.size(); y++){
 			for(int x = 0; x < model.size(); x++){
 				Particle p = model.at(x,y,z);
 				if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
 					p.calculateNewPosition();
-
-					(*nextFrame)(p.GetX(), p.GetY(), p.GetZ()) = p;
+					//TODO calculate temperature
+					
+					
+					
+					nextFrame(p.GetX(), p.GetY(), p.GetZ()) = p;
 				}
 			}
 		}		
 	}
-}
-
-void World::CalculateTemperatures(Octree<Particle>* nextFrame){
 	
-	(void)nextFrame;
+	//TODO calculate temperatures
+	//TODO calculate forces
 	
-	
-	//do things
-	// TODO
+	model = nextFrame;
 }
-
-void World::CalculateVelocities(Octree<Particle>* nextFrame){
-	(void)nextFrame;
-	//calculate things	
-	// TODO
-}
-
 
 // DRAWING TO SCREEN
 void World::Draw(){
