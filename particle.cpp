@@ -81,4 +81,48 @@ void Particle::calculateNewPosition(){
 	x+=vx;
 	y+=vy;
 	z+=vz;
+	
+	if(y<0){
+		y=0;
+		vy *= -1;
+	}else if(y >= OCTREE_SIZE){
+		y= OCTREE_SIZE - 1;
+		vy *= -1;
+	}
+	if(x<0){
+		x=0;
+		vx *= -1;
+	}else if(x >= OCTREE_SIZE){
+		x= OCTREE_SIZE - 1;
+		vx *= -1;
+	}
+	if(z<0){
+		z=0;
+		vz *= -1;
+	}else if(z >= OCTREE_SIZE){
+		z= OCTREE_SIZE - 1;
+		vz *= -1;
+	}
+}
+
+void Particle::calculateForces(Particle*** neighbours, int count){
+	float fx = 0, fy = -1, fz = 0;
+	
+	for(int i = 0; i < count; i++){
+		for(int j = 0; j < count; j++){
+			for(int k = 0; k < count; k++){
+				if(neighbours[i][j][k].GetTemperature() < MIN_TEMPERATURE){
+					continue;
+				}
+				Particle p = neighbours[i][j][k];
+				fx += x - p.GetX();
+				fy += y - p.GetY();
+				fz += z - p.GetZ();
+				
+			}
+		}
+	}
+	vx += fx;
+	vy += fy;
+	vz += fz;
 }

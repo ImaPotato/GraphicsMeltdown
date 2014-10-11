@@ -9,12 +9,13 @@
 #include "array2d.h"
 #include <stdio.h>
 #include <iostream>
+#include "define.h"
 
-const Particle NULL_PARTICLE = Particle(0,0,0,-500,0,0,0);
-int octreeSize = 16;
+// const Particle /*NULL_PARTICLE = Particle(0,0,0,-500,0,0,0)*/;
+// static int OCTREE_SIZE = 16;
 
 //int activeModel = 0; // Which model is actively being drawn. Can be 1 or 2
-Octree<Particle> model(octreeSize, NULL_PARTICLE);
+Octree<Particle> model(OCTREE_SIZE, NULL_PARTICLE);
 
 World::World() {
 	printf("World Created\n");
@@ -32,20 +33,20 @@ void World::LoadDefaultModel(){
 	for (int z = 0; z < 4; z++){		
 		for(int y = 0; y < 4; y++){
 			for(int x = 0; x < 4; x++){
-				//model(x,y,z) = Particle(x-octreeSize/2,y-octreeSize/2,z-octreeSize/2,DEF_TEMPERATURE,0,0,0);
+				//model(x,y,z) = Particle(x-OCTREE_SIZE/2,y-OCTREE_SIZE/2,z-OCTREE_SIZE/2,DEF_TEMPERATURE,0,0,0);
 				model(x,y,z) = Particle(x, y, z,DEF_TEMPERATURE,0,0,0);
 			}
 		}
 	}
 	
-	model(octreeSize-1, octreeSize-1, octreeSize-1) = Particle(octreeSize-1, octreeSize-1, octreeSize-1,DEF_TEMPERATURE,0,0,0);
+	model(OCTREE_SIZE-1, OCTREE_SIZE-1, OCTREE_SIZE-1) = Particle(OCTREE_SIZE-1, OCTREE_SIZE-1, OCTREE_SIZE-1,DEF_TEMPERATURE,0,-1,0);
 	
 	printf("Model Loaded\n");
 }
 
 // UPDATING MODEL
 void World::UpdateModel(){
-	Octree<Particle> buffer(octreeSize, NULL_PARTICLE);	
+	Octree<Particle> buffer(OCTREE_SIZE, NULL_PARTICLE);	
 	
 	for (int z = 0; z < model.size(); z++){		
 		for(int y = 0; y < model.size(); y++){
@@ -53,18 +54,61 @@ void World::UpdateModel(){
 				Particle p = model.at(x,y,z);
 				if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
 					p.calculateNewPosition();
-					//TODO calculate temperature
-					
-					
-					
 					buffer(p.GetX(), p.GetY(), p.GetZ()) = p;
 				}
 			}
 		}		
 	}
 	
-	//TODO calculate temperatures
-	//TODO calculate forces
+// 	for (int z = 0; z < model.size(); z++){		
+// 		for(int y = 0; y < model.size(); y++){
+// 			for(int x = 0; x < model.size(); x++){
+// 				Particle p = model.at(x,y,z);
+// 				if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
+// 					p.calculateNewPosition();
+// 					
+// 					//TODO calculate temperatures
+// 					
+// 					buffer(p.GetX(), p.GetY(), p.GetZ()) = p;
+// 				}
+// 			}
+// 		}		
+// 	}
+	
+	for (int z = 0; z < model.size(); z++){		
+		for(int y = 0; y < model.size(); y++){
+			for(int x = 0; x < model.size(); x++){
+				Particle p = model.at(x,y,z);
+				if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
+					
+					Particle ***neighbours = new Particle**[3];
+					for(int i = 0; i < 3; i++){
+						neighbours[i] = new Particle*[3];
+						for(int j = 0; j < 3; j++){
+							neighbours[i][j] = new Particle[3];
+							for(int k = 0; k < 3; k++){
+								if(!(x-1+i <0 || y-1+j < 0 || z-1+z < 0
+									|| x-1+i >= OCTREE_SIZE || y-1+j >= OCTREE_SIZE || z-1+z >= OCTREE_SIZE 
+									|| (x-1+i == x || y-1+j == j || z-1+z == z))){
+									neighbours[i][j][k] = buffer.at(x-1+i, y-1+j, z-1+z);
+								}else
+								{
+									neighbours[i][j][k] = NULL_PARTICLE;
+								}
+							}
+						}
+					}
+					
+					p.calculateForces(neighbours, 3);
+					
+					
+					//TODO calculate forces and velocities
+					
+// 					buffer(p.GetX(), p.GetY(), p.GetZ()) = p;
+				}
+			}
+		}		
+	}
 	
 	model = buffer;
 }

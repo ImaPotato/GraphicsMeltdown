@@ -35,6 +35,20 @@
 // Define number of vertex 
 #define G308_NUM_VERTEX_PER_FACE 3 // Triangle = 3, Quad = 4 
 
+//Define our stuff
+#define NULL_PARTICLE Particle(0,0,0,-500,0,0,0)
+#define OCTREE_SIZE 16
+
+//Drawing definnitions
+# define RADIUS 0.5
+# define SPHERE_SLICES 20
+# define SPHERE_STACKS 20
+
+//Particle attributes
+#define MIN_TEMPERATURE -273
+#define DEF_TEMPERATURE 20 // Default temperature 
+
+
 // Define Basic Structures
 struct G308_Point {
 	float x;

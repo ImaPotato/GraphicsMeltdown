@@ -1,13 +1,6 @@
 #include <GL/glut.h>
 #include "define.h"
 
-# define RADIUS 0.5
-# define SPHERE_SLICES 20
-# define SPHERE_STACKS 20
-
-#define MIN_TEMPERATURE -273
-#define DEF_TEMPERATURE 20 // Default temperature 
-
 class Particle {
 
 public:
@@ -29,6 +22,7 @@ public:
 	
 	
 	void calculateNewPosition();
+	void calculateForces(Particle*** neighbours, int count);
 
 private:
 	float x, y, z; // Coords
