@@ -18,9 +18,6 @@ public:
 	void LoadDefaultModel();
 
 	void UpdateModel();
-	void CalculateTemperatures(Octree<Particle>* nextFrame);
-	void CalculateForces(Octree<Particle>* nextFrame);
-	void CalculatePositions(Octree<Particle>* nextFrame);
 
 	void Draw();
 	void DrawModel();

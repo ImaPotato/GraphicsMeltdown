@@ -45,7 +45,7 @@ void World::LoadDefaultModel(){
 
 // UPDATING MODEL
 void World::UpdateModel(){
-	Octree<Particle> nextFrame(octreeSize, NULL_PARTICLE);	
+	Octree<Particle> buffer(octreeSize, NULL_PARTICLE);	
 	
 	for (int z = 0; z < model.size(); z++){		
 		for(int y = 0; y < model.size(); y++){
@@ -57,7 +57,7 @@ void World::UpdateModel(){
 					
 					
 					
-					nextFrame(p.GetX(), p.GetY(), p.GetZ()) = p;
+					buffer(p.GetX(), p.GetY(), p.GetZ()) = p;
 				}
 			}
 		}		
@@ -66,7 +66,7 @@ void World::UpdateModel(){
 	//TODO calculate temperatures
 	//TODO calculate forces
 	
-	model = nextFrame;
+	model = buffer;
 }
 
 // DRAWING TO SCREEN
