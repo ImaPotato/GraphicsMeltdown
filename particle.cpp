@@ -84,29 +84,29 @@ void Particle::calculateNewPosition(){
 	
 	if(y<0){
 		y=0;
-		vy *= -1;
+		vy *= -0.99;
 	}else if(y >= OCTREE_SIZE){
 		y= OCTREE_SIZE - 1;
-		vy *= -1;
+		vy *= -0.99;
 	}
 	if(x<0){
 		x=0;
-		vx *= -1;
+		vx *= -0.99;
 	}else if(x >= OCTREE_SIZE){
 		x= OCTREE_SIZE - 1;
-		vx *= -1;
+		vx *= -0.99;
 	}
 	if(z<0){
 		z=0;
-		vz *= -1;
+		vz *= -0.99;
 	}else if(z >= OCTREE_SIZE){
 		z= OCTREE_SIZE - 1;
-		vz *= -1;
+		vz *= -0.99;
 	}
 }
 
 void Particle::calculateForces(Particle*** neighbours, int count){
-	float fx = 0, fy = -1, fz = 0;
+	float fx = 0, fy = -0.1, fz = 0;
 	
 	for(int i = 0; i < count; i++){
 		for(int j = 0; j < count; j++){

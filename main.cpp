@@ -51,6 +51,7 @@ int main(int argc, char** argv)
 		world.LoadDefaultModel();
 
     glutDisplayFunc(Display);
+	glutIdleFunc(Display);
 	glutMouseFunc(Mouse);
 	glutKeyboardFunc(KeyPressed); 
 	
