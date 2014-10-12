@@ -1,5 +1,6 @@
 #include <GL/glut.h>
 #include "define.h"
+#include <vector>
 
 class Particle {
 
@@ -22,7 +23,7 @@ public:
 	
 	
 	void calculateNewPosition();
-	void calculateForces(Particle*** neighbours, int count);
+	void calculateForces(std::vector<Particle> neighbours);
 
 private:
 	float x, y, z; // Coords

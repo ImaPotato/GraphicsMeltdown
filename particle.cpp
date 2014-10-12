@@ -105,14 +105,14 @@ void Particle::calculateNewPosition(){
 	}
 }
 
-void Particle::calculateForces(std::vector<Particle> neighbours, int count){
+void Particle::calculateForces(std::vector<Particle> neighbours){
 	float fx = 0, fy = -0.1, fz = 0;
 	
-	for(std::vector<Particle>::iterator it = neighbours.begin(); it != neighbours.end(); it++){
-		fx += x - (*it).GetX();
-		fy += y - (*it).GetY();
-		fz += z - (*it).GetZ();
-	}
+// 	for(std::vector<Particle>::iterator it = neighbours.begin(); it != neighbours.end(); it++){
+// 		fx += x - (*it).GetX();
+// 		fy += y - (*it).GetY();
+// 		fz += z - (*it).GetZ();
+// 	}
 		
 	vx += fx;
 	vy += fy;

@@ -60,11 +60,12 @@ void World::UpdateModel(){
 	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
 
 		Particle p = (*it);
-		printf("Point @ test before change temperature: %d\n", (*it).GetTemperature());
+		printf("Point @ test before change temperature: %f\n", (*it).GetTemperature());
 		(*it).SetTemperature(3);
-		printf("Point @ test after change temperature: %d\n", (*it).GetTemperature());
+		printf("Point @ test after change temperature: %f\n", (*it).GetTemperature());
 		Particle p1 = *it;
-		printf("Point @ test dereference after change temperature: %d\n", (*it).GetTemperature());
+		printf("Point @ test dereference after change temperature: %f\n", (*it).GetTemperature());
+		(void)p1;
 		
 		if((*it).GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
 			printf("Point @ before calculating new position x: %f, y: %f, z: %f, vx: %f, vy: %f, vz: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ(), (*it).GetVX(), (*it).GetVY(), (*it).GetVZ());
@@ -78,7 +79,7 @@ void World::UpdateModel(){
 	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
 
 		Particle p = *it;
-		printf("Point @ second loop: %d\n", p.GetTemperature());
+		printf("Point @ second loop: %f\n", p.GetTemperature());
 	}
 	
 // 	for (int z = 0; z < model.size(); z++){		
@@ -100,21 +101,18 @@ void World::UpdateModel(){
 		Particle p = *it;
 		
 		if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
-			
-			int x = p.GetX(), y = p.GetY(), z = p.GetZ();
-			
 			std::vector<Particle> neighbours;
-			for(int i = std::max(0, x-NEIGHBOUR_DISTANCE); i <= std::min(OCTREE_SIZE-1, x+NEIGHBOUR_DISTANCE); i++){
-				for(int i = std::max(0, x-NEIGHBOUR_DISTANCE); i <= std::min(OCTREE_SIZE-1, x+NEIGHBOUR_DISTANCE); i++){
-					for(int i = std::max(0, x-NEIGHBOUR_DISTANCE); i <= std::min(OCTREE_SIZE-1, x+NEIGHBOUR_DISTANCE); i++){
-						if(!(i == x && j == y && k == z) && buffer.at(i, j, k).GetTemperature()>=MIN_TEMPERATURE){
-							neighbours[i][j][k] = buffer.at(x-1+i, y-1+j, z-1+z);
+			for(int z = std::max(0, int((*it).GetZ() - NEIGHBOUR_DISTANCE)); z <= std::min(OCTREE_SIZE-1, int((*it).GetZ() + NEIGHBOUR_DISTANCE)); z++){
+				for(int y = std::max(0, int((*it).GetY() - NEIGHBOUR_DISTANCE)); y <= std::min(OCTREE_SIZE-1, int((*it).GetY() + NEIGHBOUR_DISTANCE)); y++){
+					for(int x = std::max(0, int((*it).GetX() - NEIGHBOUR_DISTANCE)); x <= std::min(OCTREE_SIZE-1, int((*it).GetX() + NEIGHBOUR_DISTANCE)); x++){
+						if(!((*it).GetX() == x && (*it).GetY() == y && (*it).GetZ() == z) && p.GetTemperature() >= float(MIN_TEMPERATURE)){
+							neighbours.insert(neighbours.end(), buffer.at(x, y, z));
 						}
 					}
 				}
 			}
 			printf("Point @ before calculating forces x: %f, y: %f, z: %f, vx: %f, vy: %f, vz: %f\n", p.GetX(), p.GetY(), p.GetZ(), p.GetVX(), p.GetVY(), p.GetVZ());
-			(*it).calculateForces(neighbours, 3);
+			(*it).calculateForces(neighbours);
 			printf("Point @ after calculating forces x: %f, y: %f, z: %f, vx: %f, vy: %f, vz: %f\n", p.GetX(), p.GetY(), p.GetZ(), p.GetVX(), p.GetVY(), p.GetVZ());
 			
 			
