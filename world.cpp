@@ -11,7 +11,7 @@
 #include <iostream>
 
 const Particle NULL_PARTICLE = Particle(0,0,0,-500,0,0,0);
-int octreeSize = 16;
+int octreeSize = 4;
 
 int activeModel = 0; // Which model is actively being drawn. Can be 1 or 2
 Octree<Particle> model0(octreeSize, NULL_PARTICLE);
@@ -68,7 +68,7 @@ void World::CalculatePositions(){
 // DRAWING TO SCREEN
 void World::Draw(){
 	UpdateModel();
-	printf("Drawing Model%d\n",activeModel);
+	//printf("Drawing Model%d\n",activeModel);
 	if(activeModel==1)
 		DrawModel(model1);
 	else
