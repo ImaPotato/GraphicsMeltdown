@@ -105,23 +105,15 @@ void Particle::calculateNewPosition(){
 	}
 }
 
-void Particle::calculateForces(Particle*** neighbours, int count){
+void Particle::calculateForces(std::vector<Particle> neighbours, int count){
 	float fx = 0, fy = -0.1, fz = 0;
 	
-	for(int i = 0; i < count; i++){
-		for(int j = 0; j < count; j++){
-			for(int k = 0; k < count; k++){
-				if(neighbours[i][j][k].GetTemperature() < MIN_TEMPERATURE){
-					continue;
-				}
-				Particle p = neighbours[i][j][k];
-				fx += x - p.GetX();
-				fy += y - p.GetY();
-				fz += z - p.GetZ();
-				
-			}
-		}
+	for(std::vector<Particle>::iterator it = neighbours.begin(); it != neighbours.end(); it++){
+		fx += x - (*it).GetX();
+		fy += y - (*it).GetY();
+		fz += z - (*it).GetZ();
 	}
+		
 	vx += fx;
 	vy += fy;
 	vz += fz;

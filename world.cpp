@@ -12,6 +12,7 @@
 #include <iostream>
 #include "define.h"
 #include <vector>
+#include <algorithm>
 
 // const Particle /*NULL_PARTICLE = Particle(0,0,0,-500,0,0,0)*/;
 // static int OCTREE_SIZE = 16;
@@ -102,19 +103,12 @@ void World::UpdateModel(){
 			
 			int x = p.GetX(), y = p.GetY(), z = p.GetZ();
 			
-			Particle ***neighbours = new Particle**[3];
-			for(int i = 0; i < 3; i++){
-				neighbours[i] = new Particle*[3];
-				for(int j = 0; j < 3; j++){
-					neighbours[i][j] = new Particle[3];
-					for(int k = 0; k < 3; k++){
-						if(!(x-1+i <0 || y-1+j < 0 || z-1+z < 0
-							|| x-1+i >= OCTREE_SIZE || y-1+j >= OCTREE_SIZE || z-1+z >= OCTREE_SIZE 
-							|| (x-1+i == x || y-1+j == j || z-1+z == z))){
+			std::vector<Particle> neighbours;
+			for(int i = std::max(0, x-NEIGHBOUR_DISTANCE); i <= std::min(OCTREE_SIZE-1, x+NEIGHBOUR_DISTANCE); i++){
+				for(int i = std::max(0, x-NEIGHBOUR_DISTANCE); i <= std::min(OCTREE_SIZE-1, x+NEIGHBOUR_DISTANCE); i++){
+					for(int i = std::max(0, x-NEIGHBOUR_DISTANCE); i <= std::min(OCTREE_SIZE-1, x+NEIGHBOUR_DISTANCE); i++){
+						if(!(i == x && j == y && k == z) && buffer.at(i, j, k).GetTemperature()>=MIN_TEMPERATURE){
 							neighbours[i][j][k] = buffer.at(x-1+i, y-1+j, z-1+z);
-						}else
-						{
-							neighbours[i][j][k] = NULL_PARTICLE;
 						}
 					}
 				}
