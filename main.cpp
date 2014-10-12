@@ -22,8 +22,8 @@ World world;
 #define LEFT 2
 #define RIGHT 3
 float camX = 0.0;
-float camY = 0.0;
-float camZ = 100.0;
+float camY = 10.0;
+float camZ = 5.0;
 
 // Function Declarations
 void SetLight() ;
@@ -53,9 +53,9 @@ int main(int argc, char** argv)
     glutDisplayFunc(Display);
 	glutIdleFunc(Display);
 	glutMouseFunc(Mouse);
-	glutKeyboardFunc(KeyPressed); 
-	
-	
+	glutKeyboardFunc(KeyPressed);
+
+
 	SetLight();
 	SetCamera();
 
@@ -79,16 +79,16 @@ void KeyPressed (unsigned char key, int x, int y)
 		Zoom(0); // Zoom 0 = out
 		break;
 	case 'w':
-		Pan(UP); 
+		Pan(UP);
 		break;
 	case 'a':
-		Pan(LEFT); 
+		Pan(LEFT);
 		break;
 	case 's':
-		Pan(DOWN); 
+		Pan(DOWN);
 		break;
 	case 'd':
-		Pan(RIGHT); 
+		Pan(RIGHT);
 		break;
 	}
 }
@@ -101,7 +101,7 @@ void SetCamera()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	gluLookAt(camX, camY, camZ, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0); 
+	gluLookAt(camX, camY, camZ, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0);
 
 }
 
@@ -114,8 +114,8 @@ void SetLight()
 
 	glLightfv(GL_LIGHT0, GL_POSITION, direction);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffintensity);
-	glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient);		
-	
+	glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient);
+
 	glEnable(GL_LIGHT0);
 }
 
@@ -145,7 +145,7 @@ void Pan(int dir){
 	case(UP):
 		camY += PAN_RATE;
 		break;
-	case(DOWN):	
+	case(DOWN):
 		camY -= PAN_RATE;
 		break;
 	case(LEFT):
