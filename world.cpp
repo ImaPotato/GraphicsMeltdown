@@ -187,11 +187,11 @@ void vDrawScene()
         vSetTime(fTime);
 
         glTranslatef(0.0, 0.0, -1.0);
-
+/*
         glRotatef(-fPitch, 1.0, 0.0, 0.0);
         glRotatef(10, 0.0, 1.0, 0.0);
         glRotatef(fYaw, 0.0, 0.0, 1.0);
-
+*/
         glPushAttrib(GL_LIGHTING_BIT);
                 glDisable(GL_LIGHTING);
                 glColor3f(1.0, 1.0, 1.0);
