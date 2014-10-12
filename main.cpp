@@ -31,6 +31,7 @@ void SetCamera() ;
 void Display() ;
 void Mouse(int button, int state, int x, int y);
 void KeyPressed (unsigned char key, int x, int y);
+void reshape(int w, int h);
 
 void Zoom(int in);
 void Pan(int dir);
@@ -52,6 +53,7 @@ int main(int argc, char** argv)
 
     glutDisplayFunc(Display);
 	glutIdleFunc(Display);
+	glutReshapeFunc(reshape);
 	glutMouseFunc(Mouse);
 	glutKeyboardFunc(KeyPressed); 
 	
@@ -119,6 +121,18 @@ void SetLight()
 	glEnable(GL_LIGHT0);
 }
 
+void reshape(int w, int h) {
+	if (h == 0)
+		h = 1;
+	float ratio = 1.0 * w / h;
+	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glViewport(0, 0, w, h);
+	gluPerspective(45, ratio, 1, 1000);
+	glMatrixMode(GL_MODELVIEW);
+}
+
 // Display function
 void Display()
 {
@@ -138,6 +152,8 @@ void Display()
 
 	glutSwapBuffers();
 }
+
+
 
 // UI Controls
 void Pan(int dir){
