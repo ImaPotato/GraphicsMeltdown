@@ -4,9 +4,9 @@
 //
 // Edited by Daniel Atkins
 //
-// This software is provided 'as-is' for assignment of COMP308 
-// in ECS, Victoria University of Wellington, 
-// without any express or implied warranty. 
+// This software is provided 'as-is' for assignment of COMP308
+// in ECS, Victoria University of Wellington,
+// without any express or implied warranty.
 // In no event will the authors be held liable for any
 // damages arising from the use of this software.
 //
@@ -17,7 +17,7 @@
 
 #pragma once
 
-// Default Window 
+// Default Window
 #define G308_WIN_WIDTH	640
 #define G308_WIN_HEIGHT	480
 
@@ -29,11 +29,11 @@
 #define G308_ZFAR_2D	50.0
 
 // Shading mode : 0 Polygon, 1 Wireframe
-#define G308_SHADE_POLYGON 0		
+#define G308_SHADE_POLYGON 0
 #define G308_SHADE_WIREFRAME 1
 
-// Define number of vertex 
-#define G308_NUM_VERTEX_PER_FACE 3 // Triangle = 3, Quad = 4 
+// Define number of vertex
+#define G308_NUM_VERTEX_PER_FACE 3 // Triangle = 3, Quad = 4
 
 //Define our stuff
 #define NULL_PARTICLE Particle(0,0,0,-500,0,0,0)
@@ -48,7 +48,7 @@
 
 //Particle attributes
 #define MIN_TEMPERATURE -273
-#define DEF_TEMPERATURE 20 // Default temperature 
+#define DEF_TEMPERATURE 20 // Default temperature
 
 
 // Define Basic Structures

@@ -44,6 +44,8 @@ void World::LoadDefaultModel(){
 		model(i, i, i) = Particle(i, i, i,DEF_TEMPERATURE,0,-1,0);
 		particles.insert(particles.end(), model.at(i, i, i));
 	}
+	model(1, 6, 15) = Particle(1, 6, 15,DEF_TEMPERATURE,0,-1,0);
+	particles.insert(particles.end(), model.at(1, 6, 15));
 	printf("Model Loaded\n");
 }
 
@@ -56,9 +58,6 @@ void World::UpdateModel(){
 	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
 		if((*it).GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
 			(*it).calculateNewPosition();
-
-			printf("Point @ x: %f, y: %f, z: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ());
-
 			buffer((*it).GetX(), (*it).GetY(), (*it).GetZ()) = (*it);
 		}
 	}
@@ -66,17 +65,17 @@ void World::UpdateModel(){
 	outsideParticles.clear();
 
 	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
-		Particle p = *it;
-
-		if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
+		if((*it).GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
 			std::vector<Particle> neighbours;
 			bool isOnOutside = false;
 			for(int z = std::max(0, int((*it).GetZ() - NEIGHBOUR_DISTANCE)); z <= std::min(OCTREE_SIZE-1, int((*it).GetZ() + NEIGHBOUR_DISTANCE)); z++){
 				for(int y = std::max(0, int((*it).GetY() - NEIGHBOUR_DISTANCE)); y <= std::min(OCTREE_SIZE-1, int((*it).GetY() + NEIGHBOUR_DISTANCE)); y++){
 					for(int x = std::max(0, int((*it).GetX() - NEIGHBOUR_DISTANCE)); x <= std::min(OCTREE_SIZE-1, int((*it).GetX() + NEIGHBOUR_DISTANCE)); x++){
 						if(!((*it).GetX() == x && (*it).GetY() == y && (*it).GetZ() == z)){
+							Particle p = model.at(x, y, z);
+
 							if(p.GetTemperature() >= float(MIN_TEMPERATURE)){
-								neighbours.insert(neighbours.end(), buffer.at(x, y, z));
+								neighbours.insert(neighbours.end(), p);
 							}
 							else{
 								isOnOutside = true;
@@ -86,13 +85,15 @@ void World::UpdateModel(){
 				}
 			}
 			(*it).calculateForces(neighbours);
+			printf("Point @ x: %f, y: %f, z: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ());
+			printf("Number of neighbours: %u\n", neighbours.size());
+			printf("Is on outside: %s\n", isOnOutside ? "true" : "false");
+
 			if(isOnOutside){
 				outsideParticles.insert(outsideParticles.end(), *it);
 			}
 		}
 	}
-
-
 	model = buffer;
 	printf("End UpdateModel\n\n\n");
 }
@@ -107,17 +108,17 @@ void World::Draw(){
 // NOTE: This version does not use z sclices so is not optimized but works
 void World::DrawModel(){
 	vDrawScene();
-/*
-	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
-		Particle p = *it;
-		if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
-			//printf("Drawing point x: %f, y: %f, z:%f\n", p.GetX(), p.GetY(), p.GetZ());
-			p.Draw();
-		}
-		else{
-			//printf("Not drawing point x: %f, y: %f, z:%f\n", p.GetX(), p.GetY(), p.GetZ());
-		}
-	}*/
+
+//	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
+//		Particle p = *it;
+//		if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
+//			//printf("Drawing point x: %f, y: %f, z:%f\n", p.GetX(), p.GetY(), p.GetZ());
+//			p.Draw();
+//		}
+//		else{
+//			//printf("Not drawing point x: %f, y: %f, z:%f\n", p.GetX(), p.GetY(), p.GetZ());
+//		}
+//	}
 }
 
 struct GLvector
@@ -154,7 +155,7 @@ static const GLfloat a2fEdgeDirection[12][3] =
 };
 
 GLenum    ePolygonMode = GL_FILL;
-GLint     iDataSetSize = 64;
+GLint     iDataSetSize = 24;
 GLfloat   fStepSize = 1.0/iDataSetSize;
 GLfloat   fTargetValue = 48.0;
 GLfloat   fTime = 0.0;
@@ -186,9 +187,10 @@ void vDrawScene()
         vSetTime(fTime);
 
         glTranslatef(0.0, 0.0, -1.0);
-        glRotatef( -fPitch, 1.0, 0.0, 0.0);
-        glRotatef(     0.0, 0.0, 1.0, 0.0);
-        glRotatef(    fYaw, 0.0, 0.0, 1.0);
+
+        glRotatef(-fPitch, 1.0, 0.0, 0.0);
+        glRotatef(10, 0.0, 1.0, 0.0);
+        glRotatef(fYaw, 0.0, 0.0, 1.0);
 
         glPushAttrib(GL_LIGHTING_BIT);
                 glDisable(GL_LIGHTING);
@@ -286,21 +288,29 @@ GLfloat fSample1(GLfloat fX, GLfloat fY, GLfloat fZ)
 {
         GLdouble fResult = 0.0;
         GLdouble fDx, fDy, fDz;
+
+        for(int i = 0; i < outsideParticles.size(); i++){
+            fDx = fX -  outsideParticles.at(i).GetX() / OCTREE_SIZE;
+            fDy = fY -  outsideParticles.at(i).GetY() / OCTREE_SIZE;
+            fDz = fZ -  outsideParticles.at(i).GetZ() / OCTREE_SIZE;
+            fResult += 0.2/(fDx*fDx + fDy*fDy + fDz*fDz);
+        }
+/*
         fDx = fX - sSourcePoint[0].fX;
         fDy = fY - sSourcePoint[0].fY;
         fDz = fZ - sSourcePoint[0].fZ;
-        fResult += 0.5/(fDx*fDx + fDy*fDy + fDz*fDz);
+        fResult += 0.2/(fDx*fDx + fDy*fDy + fDz*fDz);
 
         fDx = fX - sSourcePoint[1].fX;
         fDy = fY - sSourcePoint[1].fY;
         fDz = fZ - sSourcePoint[1].fZ;
-        fResult += 0.5/(fDx*fDx + fDy*fDy + fDz*fDz);
+        fResult += 0.2/(fDx*fDx + fDy*fDy + fDz*fDz);
 
         fDx = fX - sSourcePoint[2].fX;
         fDy = fY - sSourcePoint[2].fY;
         fDz = fZ - sSourcePoint[2].fZ;
-        fResult += 0.5/(fDx*fDx + fDy*fDy + fDz*fDz);
-
+        fResult += 0.2/(fDx*fDx + fDy*fDy + fDz*fDz);
+*/
         return fResult;
 }
 
