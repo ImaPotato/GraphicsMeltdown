@@ -20,6 +20,8 @@
 //int activeModel = 0; // Which model is actively being drawn. Can be 1 or 2
 Octree<Particle> model(OCTREE_SIZE, NULL_PARTICLE);
 std::vector<Particle> particles;
+std::vector<Particle> outsideParticles;
+
 
 World::World() {
 	printf("World Created\n");
@@ -57,29 +59,14 @@ void World::UpdateModel(){
 	
 	Octree<Particle> buffer(OCTREE_SIZE, NULL_PARTICLE);
 	
-	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
-
-		Particle p = (*it);
-		printf("Point @ test before change temperature: %f\n", (*it).GetTemperature());
-		(*it).SetTemperature(3);
-		printf("Point @ test after change temperature: %f\n", (*it).GetTemperature());
-		Particle p1 = *it;
-		printf("Point @ test dereference after change temperature: %f\n", (*it).GetTemperature());
-		(void)p1;
-		
+	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){		
 		if((*it).GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
-			printf("Point @ before calculating new position x: %f, y: %f, z: %f, vx: %f, vy: %f, vz: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ(), (*it).GetVX(), (*it).GetVY(), (*it).GetVZ());
 			(*it).calculateNewPosition();
-			printf("Point @ after calculating new position x: %f, y: %f, z: %f, vx: %f, vy: %f, vz: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ(), (*it).GetVX(), (*it).GetVY(), (*it).GetVZ());
 			
-			buffer(p.GetX(), p.GetY(), p.GetZ()) = p;
+			printf("Point @ x: %f, y: %f, z: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ());
+			
+			buffer((*it).GetX(), (*it).GetY(), (*it).GetZ()) = (*it);
 		}
-	}
-		
-	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
-
-		Particle p = *it;
-		printf("Point @ second loop: %f\n", p.GetTemperature());
 	}
 	
 // 	for (int z = 0; z < model.size(); z++){		
@@ -97,26 +84,32 @@ void World::UpdateModel(){
 // 		}		
 // 	}
 	
+	outsideParticles.clear();
+	
 	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
 		Particle p = *it;
 		
 		if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
 			std::vector<Particle> neighbours;
+			bool isOnOutside = false;
 			for(int z = std::max(0, int((*it).GetZ() - NEIGHBOUR_DISTANCE)); z <= std::min(OCTREE_SIZE-1, int((*it).GetZ() + NEIGHBOUR_DISTANCE)); z++){
 				for(int y = std::max(0, int((*it).GetY() - NEIGHBOUR_DISTANCE)); y <= std::min(OCTREE_SIZE-1, int((*it).GetY() + NEIGHBOUR_DISTANCE)); y++){
 					for(int x = std::max(0, int((*it).GetX() - NEIGHBOUR_DISTANCE)); x <= std::min(OCTREE_SIZE-1, int((*it).GetX() + NEIGHBOUR_DISTANCE)); x++){
-						if(!((*it).GetX() == x && (*it).GetY() == y && (*it).GetZ() == z) && p.GetTemperature() >= float(MIN_TEMPERATURE)){
-							neighbours.insert(neighbours.end(), buffer.at(x, y, z));
+						if(!((*it).GetX() == x && (*it).GetY() == y && (*it).GetZ() == z)){
+							if(p.GetTemperature() >= float(MIN_TEMPERATURE)){
+								neighbours.insert(neighbours.end(), buffer.at(x, y, z));
+							}
+							else{
+								isOnOutside = true;
+							}
 						}
 					}
 				}
 			}
-			printf("Point @ before calculating forces x: %f, y: %f, z: %f, vx: %f, vy: %f, vz: %f\n", p.GetX(), p.GetY(), p.GetZ(), p.GetVX(), p.GetVY(), p.GetVZ());
 			(*it).calculateForces(neighbours);
-			printf("Point @ after calculating forces x: %f, y: %f, z: %f, vx: %f, vy: %f, vz: %f\n", p.GetX(), p.GetY(), p.GetZ(), p.GetVX(), p.GetVY(), p.GetVZ());
-			
-			
-			//TODO calculate forces and velocities
+			if(isOnOutside){
+				outsideParticles.insert(outsideParticles.end(), *it);
+			}
 		}
 	}
 		
@@ -134,11 +127,22 @@ void World::Draw(){
 
 // NOTE: This version does not use z sclices so is not optimized but works
 void World::DrawModel(){
+// 	for(int z = 0; z < OCTREE_SIZE; z++){
+// 		for(int y = 0; y < OCTREE_SIZE; y++){
+// 			for(int x = 0; x < OCTREE_SIZE; x++){
+// 				
+// // 				printf("Drawing point @ x: %d, y: %d, z: %d\n", x, y, z);
+// 				Particle p = model.at(x, y, z);
+// // 				printf("Drawing point with values x: %f, y: %f, z: %f\n", p.GetX(), p.GetY(), p.GetZ());
+// 				if(p.GetTemperature() >= MIN_TEMPERATURE){
+// 					p.Draw();
+// 				}
+// 			}
+// 		}
+// 	}
+	
 	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
 		Particle p = *it;
-		
-		printf("Point @ drawing x: %f, y: %f, z: %f, vx: %f, vy: %f, vz: %f\n", p.GetX(), p.GetY(), p.GetZ(), p.GetVX(), p.GetVY(), p.GetVZ());
-		
 		if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
 			//printf("Drawing point x: %f, y: %f, z:%f\n", p.GetX(), p.GetY(), p.GetZ());
 			p.Draw();
@@ -147,7 +151,6 @@ void World::DrawModel(){
 			//printf("Not drawing point x: %f, y: %f, z:%f\n", p.GetX(), p.GetY(), p.GetZ());
 		}
 	}
-		
 }
 
 // NOTE: This is theoretically same as above code converted to use z sclices... but doesn't work

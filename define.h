@@ -37,7 +37,7 @@
 
 //Define our stuff
 #define NULL_PARTICLE Particle(0,0,0,-500,0,0,0)
-#define OCTREE_SIZE 512
+#define OCTREE_SIZE 16
 #define GRAVITY 9.81
 #define NEIGHBOUR_DISTANCE 2
 

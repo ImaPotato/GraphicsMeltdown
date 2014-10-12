@@ -82,26 +82,26 @@ void Particle::calculateNewPosition(){
 	y+=vy;
 	z+=vz;
 	
-	if(y<0){
-		y=0;
-		vy *= -0.99;
-	}else if(y >= OCTREE_SIZE){
-		y= OCTREE_SIZE - 1;
-		vy *= -0.99;
-	}
 	if(x<0){
 		x=0;
-		vx *= -0.99;
+		vx = std::max(-0.99*vx, vx*0.99);
 	}else if(x >= OCTREE_SIZE){
 		x= OCTREE_SIZE - 1;
-		vx *= -0.99;
+		vx = std::min(-0.99*vx, vx*0.99);
+	}
+	if(y<0){
+		y=0;
+		vy = std::max(-0.99*vy, vy*0.99);
+	}else if(y >= OCTREE_SIZE){
+		y= OCTREE_SIZE - 1;
+		vy = std::min(-0.99*vy, vy*0.99);
 	}
 	if(z<0){
 		z=0;
-		vz *= -0.99;
+		vz = std::max(-0.99*vz, vz*0.99);
 	}else if(z >= OCTREE_SIZE){
 		z= OCTREE_SIZE - 1;
-		vz *= -0.99;
+		vz = std::min(-0.99*vz, vz*0.99);
 	}
 }
 
