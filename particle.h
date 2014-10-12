@@ -1,6 +1,7 @@
-#include <GL/glut.h>
+
 #include "define.h"
 #include <vector>
+#include <GL/glut.h>
 
 class Particle {
 

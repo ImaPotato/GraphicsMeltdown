@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <assert.h>
-#include <stdlib.h>
-#include <GL/glut.h>
 #include <iostream>
 #include <math.h> 
+#include <stdlib.h>
+#include <GL/glut.h>
 
 #include "world.h"
 #include "main.h"
