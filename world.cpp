@@ -62,9 +62,6 @@ void World::UpdateModel(){
 	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){		
 		if((*it).GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
 			(*it).calculateNewPosition();
-			
-			printf("Point @ x: %f, y: %f, z: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ());
-			
 			buffer((*it).GetX(), (*it).GetY(), (*it).GetZ()) = (*it);
 		}
 	}
@@ -87,17 +84,18 @@ void World::UpdateModel(){
 	outsideParticles.clear();
 	
 	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
-		Particle p = *it;
 		
-		if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
+		if((*it).GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
 			std::vector<Particle> neighbours;
 			bool isOnOutside = false;
 			for(int z = std::max(0, int((*it).GetZ() - NEIGHBOUR_DISTANCE)); z <= std::min(OCTREE_SIZE-1, int((*it).GetZ() + NEIGHBOUR_DISTANCE)); z++){
 				for(int y = std::max(0, int((*it).GetY() - NEIGHBOUR_DISTANCE)); y <= std::min(OCTREE_SIZE-1, int((*it).GetY() + NEIGHBOUR_DISTANCE)); y++){
 					for(int x = std::max(0, int((*it).GetX() - NEIGHBOUR_DISTANCE)); x <= std::min(OCTREE_SIZE-1, int((*it).GetX() + NEIGHBOUR_DISTANCE)); x++){
 						if(!((*it).GetX() == x && (*it).GetY() == y && (*it).GetZ() == z)){
+							Particle p = model.at(x, y, z);
+
 							if(p.GetTemperature() >= float(MIN_TEMPERATURE)){
-								neighbours.insert(neighbours.end(), buffer.at(x, y, z));
+								neighbours.insert(neighbours.end(), p);
 							}
 							else{
 								isOnOutside = true;
@@ -107,13 +105,15 @@ void World::UpdateModel(){
 				}
 			}
 			(*it).calculateForces(neighbours);
+			printf("Point @ x: %f, y: %f, z: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ());
+			printf("Number of neighbours: %u\n", neighbours.size());
+			printf("Is on outside: %s\n", isOnOutside ? "true" : "false");
+			
 			if(isOnOutside){
 				outsideParticles.insert(outsideParticles.end(), *it);
 			}
 		}
 	}
-		
-	
 	model = buffer;
 	printf("End UpdateModel\n\n\n");
 }
