@@ -6,8 +6,8 @@ LDPATH = -Wl,-R/usr/pkg/lib
 RM = rm
 all: Ass2
 
-Ass2: world.o particle.o main.o quaternion.o
-	$(CC) -o $@ $^ -lm -lGL -lGLU -lglut $(LPATH)
+Ass2: main2.o arcball.o world.o particle.o #world.o particle.o main.o quaternion.o main2.o
+	$(CC) -o $@ $^ -lm -lGL -lGLU -lglut -lGLEW $(LPATH)
 	
 .cpp.o: 
 	$(CC) $(CFLAGS) -c -o $@ $^ $(IPATH)

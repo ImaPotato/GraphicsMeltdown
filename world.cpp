@@ -15,6 +15,42 @@
 #include <algorithm>
 #include <cmath>
 
+struct GLvector
+{
+        GLfloat fX;
+        GLfloat fY;
+        GLfloat fZ;
+};
+
+//a2fVertexOffset lists the positions, relative to vertex0, of each of the 8 vertices of a cube
+static const GLfloat a2fVertexOffset[8][3] =
+{
+        {0.0, 0.0, 0.0},{1.0, 0.0, 0.0},{1.0, 1.0, 0.0},{0.0, 1.0, 0.0},
+        {0.0, 0.0, 1.0},{1.0, 0.0, 1.0},{1.0, 1.0, 1.0},{0.0, 1.0, 1.0}
+};
+
+//a2iEdgeConnection lists the index of the endpoint vertices for each of the 12 edges of the cube
+static const GLint a2iEdgeConnection[12][2] =
+{
+        {0,1}, {1,2}, {2,3}, {3,0},
+        {4,5}, {5,6}, {6,7}, {7,4},
+        {0,4}, {1,5}, {2,6}, {3,7}
+};
+
+//a2fEdgeDirection lists the direction vector (vertex1-vertex0) for each edge in the cube
+static const GLfloat a2fEdgeDirection[12][3] =
+{
+        {1.0, 0.0, 0.0},{0.0, 1.0, 0.0},{-1.0, 0.0, 0.0},{0.0, -1.0, 0.0},
+        {1.0, 0.0, 0.0},{0.0, 1.0, 0.0},{-1.0, 0.0, 0.0},{0.0, -1.0, 0.0},
+        {0.0, 0.0, 1.0},{0.0, 0.0, 1.0},{ 0.0, 0.0, 1.0},{0.0,  0.0, 1.0}
+};
+
+GLenum    ePolygonMode = GL_FILL;
+GLint     iDataSetSize = OCTREE_SIZE;
+GLfloat   fStepSize = 1.0/iDataSetSize;
+GLfloat   fTargetValue = 20.0;
+GLfloat   fTime = 0.0;
+
 Octree<Particle> model(OCTREE_SIZE, NULL_PARTICLE);
 std::vector<Particle> particles;
 std::vector<Particle> outsideParticles;
@@ -22,9 +58,6 @@ std::vector<Particle> outsideParticles;
 void vDrawScene();
 
 GLvoid vSetTime(GLfloat fTime);
-GLfloat fSample1(GLfloat fX, GLfloat fY, GLfloat fZ);
-GLfloat (*fSample)(GLfloat fX, GLfloat fY, GLfloat fZ) = fSample1;
-
 GLvoid vMarchingCubes();
 GLvoid vMarchCubes(GLfloat fX, GLfloat fY, GLfloat fZ, GLfloat fScale);
 
@@ -44,14 +77,12 @@ void World::LoadDefaultModel(){
 		model(i, i, i) = Particle(i, i, i,DEF_TEMPERATURE,0,-1,0);
 		particles.insert(particles.end(), model.at(i, i, i));
 	}
-	model(1, 6, 15) = Particle(1, 6, 15,DEF_TEMPERATURE,0,-1,0);
-	particles.insert(particles.end(), model.at(1, 6, 15));
 	printf("Model Loaded\n");
 }
 
 // UPDATING MODEL
 void World::UpdateModel(){
-	printf("\n\n\n\nBegin UpdateModel\n");
+	//printf("\n\n\nBegin UpdateModel\n");
 
 	Octree<Particle> buffer(OCTREE_SIZE, NULL_PARTICLE);
 
@@ -85,9 +116,9 @@ void World::UpdateModel(){
 				}
 			}
 			(*it).calculateForces(neighbours);
-			printf("Point @ x: %f, y: %f, z: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ());
-			printf("Number of neighbours: %u\n", neighbours.size());
-			printf("Is on outside: %s\n", isOnOutside ? "true" : "false");
+			//printf("Point @ x: %f, y: %f, z: %f\n", (*it).GetX(), (*it).GetY(), (*it).GetZ());
+			//printf("Number of neighbours: %u\n", neighbours.size());
+			//printf("Is on outside: %s\n", isOnOutside ? "true" : "false");
 
 			if(isOnOutside){
 				outsideParticles.insert(outsideParticles.end(), *it);
@@ -95,121 +126,27 @@ void World::UpdateModel(){
 		}
 	}
 	model = buffer;
-	printf("End UpdateModel\n\n\n");
+	//printf("End UpdateModel\n\n\n");
 }
 
 // DRAWING TO SCREEN
 void World::Draw(){
 	UpdateModel();
-	//printf("Drawing Model%d\n",activeModel);
-	DrawModel();
-}
-
-// NOTE: This version does not use z sclices so is not optimized but works
-void World::DrawModel(){
 	vDrawScene();
-
-//	for(std::vector<Particle>::iterator it = particles.begin(); it != particles.end(); it++){
-//		Particle p = *it;
-//		if(p.GetTemperature() >= MIN_TEMPERATURE){ // I.e not a null particle
-//			//printf("Drawing point x: %f, y: %f, z:%f\n", p.GetX(), p.GetY(), p.GetZ());
-//			p.Draw();
-//		}
-//		else{
-//			//printf("Not drawing point x: %f, y: %f, z:%f\n", p.GetX(), p.GetY(), p.GetZ());
-//		}
-//	}
 }
 
-struct GLvector
-{
-        GLfloat fX;
-        GLfloat fY;
-        GLfloat fZ;
-};
+void vDrawScene() {
 
-//These tables are used so that everything can be done in little loops that you can look at all at once
-// rather than in pages and pages of unrolled code.
+	glColor3f(1.0, 1.0, 1.0);
+	glutWireCube(1.0);
 
-//a2fVertexOffset lists the positions, relative to vertex0, of each of the 8 vertices of a cube
-static const GLfloat a2fVertexOffset[8][3] =
-{
-        {0.0, 0.0, 0.0},{1.0, 0.0, 0.0},{1.0, 1.0, 0.0},{0.0, 1.0, 0.0},
-        {0.0, 0.0, 1.0},{1.0, 0.0, 1.0},{1.0, 1.0, 1.0},{0.0, 1.0, 1.0}
-};
+	glPushMatrix();
+	glTranslatef(-0.5, -0.5, -0.5);
+	glBegin(GL_TRIANGLES);
+		vMarchingCubes();
+	glEnd();
+	glPopMatrix();
 
-//a2iEdgeConnection lists the index of the endpoint vertices for each of the 12 edges of the cube
-static const GLint a2iEdgeConnection[12][2] =
-{
-        {0,1}, {1,2}, {2,3}, {3,0},
-        {4,5}, {5,6}, {6,7}, {7,4},
-        {0,4}, {1,5}, {2,6}, {3,7}
-};
-
-//a2fEdgeDirection lists the direction vector (vertex1-vertex0) for each edge in the cube
-static const GLfloat a2fEdgeDirection[12][3] =
-{
-        {1.0, 0.0, 0.0},{0.0, 1.0, 0.0},{-1.0, 0.0, 0.0},{0.0, -1.0, 0.0},
-        {1.0, 0.0, 0.0},{0.0, 1.0, 0.0},{-1.0, 0.0, 0.0},{0.0, -1.0, 0.0},
-        {0.0, 0.0, 1.0},{0.0, 0.0, 1.0},{ 0.0, 0.0, 1.0},{0.0,  0.0, 1.0}
-};
-
-GLenum    ePolygonMode = GL_FILL;
-GLint     iDataSetSize = 24;
-GLfloat   fStepSize = 1.0/iDataSetSize;
-GLfloat   fTargetValue = 48.0;
-GLfloat   fTime = 0.0;
-GLvector  sSourcePoint[3];
-GLboolean bSpin = true;
-GLboolean bMove = true;
-GLboolean bLight = true;
-
-void vDrawScene()
-{
-        static GLfloat fPitch = 0.0;
-        static GLfloat fYaw   = 0.0;
-        static GLfloat fTime = 0.0;
-
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-        glPushMatrix();
-
-        if(bSpin)
-        {
-                fPitch += 4.0;
-                fYaw   += 2.5;
-        }
-        if(bMove)
-        {
-                fTime  += 0.025;
-        }
-
-        vSetTime(fTime);
-
-        glTranslatef(0.0, 0.0, -1.0);
-/*
-        glRotatef(-fPitch, 1.0, 0.0, 0.0);
-        glRotatef(10, 0.0, 1.0, 0.0);
-        glRotatef(fYaw, 0.0, 0.0, 1.0);
-*/
-        glPushAttrib(GL_LIGHTING_BIT);
-                glDisable(GL_LIGHTING);
-                glColor3f(1.0, 1.0, 1.0);
-                glutWireCube(1.0);
-        glPopAttrib();
-
-
-        glPushMatrix();
-        glTranslatef(-0.5, -0.5, -0.5);
-        glBegin(GL_TRIANGLES);
-                vMarchingCubes();
-        glEnd();
-        glPopMatrix();
-
-
-        glPopMatrix();
-
-        glutSwapBuffers();
 }
 
 //fGetOffset finds the approximate point of intersection of the surface
@@ -261,30 +198,7 @@ GLvoid vNormalizeVector(GLvector &rfVectorResult, GLvector &rfVectorSource)
         }
 }
 
-
-//Generate a sample data set.  fSample1(), fSample2() and fSample3() define three scalar fields whose
-// values vary by the X,Y and Z coordinates and by the fTime value set by vSetTime()
-GLvoid vSetTime(GLfloat fNewTime)
-{
-        GLfloat fOffset;
-        GLint iSourceNum;
-
-        for(iSourceNum = 0; iSourceNum < 3; iSourceNum++)
-        {
-                sSourcePoint[iSourceNum].fX = 0.5;
-                sSourcePoint[iSourceNum].fY = 0.5;
-                sSourcePoint[iSourceNum].fZ = 0.5;
-        }
-
-        fTime = fNewTime;
-        fOffset = 1.0 + sinf(fTime);
-        sSourcePoint[0].fX *= fOffset;
-        sSourcePoint[1].fY *= fOffset;
-        sSourcePoint[2].fZ *= fOffset;
-}
-
-//fSample1 finds the distance of (fX, fY, fZ) from three moving points
-GLfloat fSample1(GLfloat fX, GLfloat fY, GLfloat fZ)
+GLfloat calculateSample(GLfloat fX, GLfloat fY, GLfloat fZ)
 {
         GLdouble fResult = 0.0;
         GLdouble fDx, fDy, fDz;
@@ -293,24 +207,8 @@ GLfloat fSample1(GLfloat fX, GLfloat fY, GLfloat fZ)
             fDx = fX -  outsideParticles.at(i).GetX() / OCTREE_SIZE;
             fDy = fY -  outsideParticles.at(i).GetY() / OCTREE_SIZE;
             fDz = fZ -  outsideParticles.at(i).GetZ() / OCTREE_SIZE;
-            fResult += 0.2/(fDx*fDx + fDy*fDy + fDz*fDz);
+            fResult += 0.1/(fDx*fDx + fDy*fDy + fDz*fDz);
         }
-/*
-        fDx = fX - sSourcePoint[0].fX;
-        fDy = fY - sSourcePoint[0].fY;
-        fDz = fZ - sSourcePoint[0].fZ;
-        fResult += 0.2/(fDx*fDx + fDy*fDy + fDz*fDz);
-
-        fDx = fX - sSourcePoint[1].fX;
-        fDy = fY - sSourcePoint[1].fY;
-        fDz = fZ - sSourcePoint[1].fZ;
-        fResult += 0.2/(fDx*fDx + fDy*fDy + fDz*fDz);
-
-        fDx = fX - sSourcePoint[2].fX;
-        fDy = fY - sSourcePoint[2].fY;
-        fDz = fZ - sSourcePoint[2].fZ;
-        fResult += 0.2/(fDx*fDx + fDy*fDy + fDz*fDz);
-*/
         return fResult;
 }
 
@@ -318,9 +216,9 @@ GLfloat fSample1(GLfloat fX, GLfloat fY, GLfloat fZ)
 //This gradient can be used as a very accurate vertx normal for lighting calculations
 GLvoid vGetNormal(GLvector &rfNormal, GLfloat fX, GLfloat fY, GLfloat fZ)
 {
-        rfNormal.fX = fSample(fX-0.01, fY, fZ) - fSample(fX+0.01, fY, fZ);
-        rfNormal.fY = fSample(fX, fY-0.01, fZ) - fSample(fX, fY+0.01, fZ);
-        rfNormal.fZ = fSample(fX, fY, fZ-0.01) - fSample(fX, fY, fZ+0.01);
+        rfNormal.fX = calculateSample(fX-0.01, fY, fZ) - calculateSample(fX+0.01, fY, fZ);
+        rfNormal.fY = calculateSample(fX, fY-0.01, fZ) - calculateSample(fX, fY+0.01, fZ);
+        rfNormal.fZ = calculateSample(fX, fY, fZ-0.01) - calculateSample(fX, fY, fZ+0.01);
         vNormalizeVector(rfNormal, rfNormal);
 }
 
@@ -341,7 +239,7 @@ GLvoid vMarchCubes(GLfloat fX, GLfloat fY, GLfloat fZ, GLfloat fScale)
         //Make a local copy of the values at the cube's corners
         for(iVertex = 0; iVertex < 8; iVertex++)
         {
-                afCubeValue[iVertex] = fSample(fX + a2fVertexOffset[iVertex][0]*fScale,
+                afCubeValue[iVertex] = calculateSample(fX + a2fVertexOffset[iVertex][0]*fScale,
                                                    fY + a2fVertexOffset[iVertex][1]*fScale,
                                                    fZ + a2fVertexOffset[iVertex][2]*fScale);
         }
