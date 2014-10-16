@@ -77,6 +77,12 @@ void World::LoadDefaultModel(){
 		model(i, i, i) = Particle(i, i, i,DEF_TEMPERATURE,0,-1,0);
 		particles.insert(particles.end(), model.at(i, i, i));
 	}
+
+	for(int i = 2; i < OCTREE_SIZE - 2; i++){
+		model(OCTREE_SIZE - i, i, i) = Particle(OCTREE_SIZE - i, i, i,DEF_TEMPERATURE,0,-1,0);
+		particles.insert(particles.end(), model.at(OCTREE_SIZE -i, i, i));
+	}
+
 	printf("Model Loaded\n");
 }
 
