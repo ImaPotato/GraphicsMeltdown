@@ -7,6 +7,7 @@
 
 #include "main.h"
 #include "quaternion.h"
+#include "particle.h"
 
 // Global Variables
 GLuint g_mainWnd;
@@ -16,6 +17,10 @@ GLuint WinHeight = 800;
 // UI Parameters
 #define ZOOM_RATE 1.0
 #define PAN_RATE 1.0
+
+static const double target_fps = 60.0;
+static const double ms_per_frame = 1000.0 / target_fps;
+
 
 const point2d origin = {0.0 , 0.0};
 
@@ -35,6 +40,10 @@ point2d rightMouseDownPt = origin;
 float downModOriginX = 0.0,  downModOriginY = 0.0,  downModOriginZ = 0.0;
 float leftSelectX = 0.0, leftSelectY = 0.0, leftSelectZ = 0.0;
 
+//model positioning 
+float modOriginX = 0.0, modOriginY = 0.0, modOriginZ = 0.0;
+float xRot = 0.0, yRot = 0.0, zRot = 0.0;
+
 // Laser
 float lasOriginX = 10.0, lasOriginY = -10.0, lasOriginZ = 100.0;
 float lasTargetX = 0.0, lasTargetY = 0.0, lasTargetZ = 0.0;
@@ -43,6 +52,7 @@ float lasTargetX = 0.0, lasTargetY = 0.0, lasTargetZ = 0.0;
 void SetLight() ;
 void SetCamera() ;
 void Display() ;
+void TimedIdle(int flag);
 
 void Mouse(int button, int state, int x, int y);
 void MouseMoved(int x, int y);
@@ -57,9 +67,12 @@ void ArcPan(int x, int y);
 //Laser
 void DrawLaser();
 
+SPHack::ParticleSystem ps(SPHack::AABB(SPHack::Vec2(0.0, 0.0), SPHack::Vec2(1.0, 1.0)), 0.012);
+int selected_particle = -1;
+
 // MAIN
 int main(int argc, char** argv)
-{
+{	
 	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(WinWidth, WinHeight);
@@ -71,7 +84,9 @@ int main(int argc, char** argv)
 	glutIdleFunc(Display);
 
 	glutReshapeFunc(reshape);
-
+	
+	glutTimerFunc(0, &TimedIdle, 0);
+	
 	glutMouseFunc(Mouse);
 	glutMotionFunc(MouseMoved);
 	glutKeyboardFunc(KeyPressed); 	
@@ -79,9 +94,48 @@ int main(int argc, char** argv)
 	SetLight();
 	SetCamera();
 
+	ps.setCFMScale(0.01);
+	ps.setSurfaceTension(0.0000008);
+	ps.AddParticles(SPHack::AABB(SPHack::Vec2(0.0, 0.0), SPHack::Vec2(0.3, 0.7)));
+	ps.InitDensity();
+	ps.Clear();
+	ps.AddParticles(SPHack::AABB(SPHack::Vec2(0.0, 0.0), SPHack::Vec2(0.3, 0.7)));
+	
+	
     glutMainLoop();
 
 	return 0;
+}
+
+void Tick() {
+	ps.Step(1.0 / target_fps);
+}
+
+bool paused = false;
+
+void TimedIdle(int flag) {
+	// needs better resolution timer
+	int start = glutGet(GLUT_ELAPSED_TIME);
+	if (!paused) {
+		Tick();
+	}
+	int end = glutGet(GLUT_ELAPSED_TIME);
+	
+	glutPostRedisplay();
+	int delay_ms = round(ms_per_frame - (end - start));
+	glutTimerFunc(delay_ms > 0 ? delay_ms : 0, &TimedIdle, 0);
+}
+
+void DrawCircle(float center_x, float center_y, float radius) {
+	glPushMatrix();
+	glTranslatef(center_x, center_y, 0.0);
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex2f(0.0, 0.0);
+	for (int i = 0; i <= 12; ++i) {
+		glVertex2f(cos(i * (M_PI / 6.0))*radius, sin(i * (M_PI / 6.0))*radius); 
+	}
+	glEnd();
+	glPopMatrix();
 }
 
 void pickPoint(int button, int state, int x, int y){
@@ -188,6 +242,8 @@ void KeyPressed (unsigned char key, int x, int y)
 		Pan(RIGHT); 
 		break;
 	}
+	x++;
+	y++;
 }
 
 void SetCamera()
@@ -198,7 +254,7 @@ void SetCamera()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	gluLookAt(0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0); 
+	gluLookAt(0.25, 0.25, 1.0, 0.25, 0.25, 0.0, 0.0, 1.0, 0.0); 
 }
 
 // Set Light
@@ -230,28 +286,53 @@ void reshape(int w, int h) {
 // Display function
 void Display()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	glColor3f(0.0f,1.0f,1.0f); /* set object color as cyan */
-
-	glPushMatrix();
-		glTranslatef(modOriginX,modOriginY, modOriginZ);
-		glRotatef(xRot, 0.0, 1.0, 0.0);
-		glRotatef(yRot, 1.0, 0.0, 0.0);
-		glRotatef(zRot, 0.0, 0.0, 1.0);
-	glPopMatrix();
-
-	DrawLaser();
-
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_COLOR_MATERIAL);
-
+// 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+// 	glEnable(GL_DEPTH_TEST);
+// 	glEnable(GL_LIGHTING);
+// 	glEnable(GL_COLOR_MATERIAL);
+// 
+// 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+// 	glColor3f(0.0f,1.0f,1.0f); /* set object color as cyan */
+// 
+// 	glPushMatrix();
+// 		glTranslatef(modOriginX,modOriginY, modOriginZ);
+// 		glRotatef(xRot, 0.0, 1.0, 0.0);
+// 		glRotatef(yRot, 1.0, 0.0, 0.0);
+// 		glRotatef(zRot, 0.0, 0.0, 1.0);
+// 	glPopMatrix();
+// 
+// 	DrawLaser();
+// 
+// 	glDisable(GL_DEPTH_TEST);
+// 	glDisable(GL_LIGHTING);
+// 	glDisable(GL_COLOR_MATERIAL);
+// 
+// 	glutSwapBuffers();
+	
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glColor3f(1.0, 1.0, 1.0);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(0.0, 0.0);
+	glVertex2f(0.0,  1.0);
+	glVertex2f(1.0, 1.0);
+	glVertex2f(1.0, 0.0);
+	glEnd();
+	
+	for (int i = 0; i < ps.size(); ++i) {
+		if (ps.isActive(i)) {
+			SPHack::Real density = ps.density(i);
+			if (i == selected_particle) {
+				glColor3f(1.0, 1.0, 1.0);
+			} else {
+				glColor3f(5.0*(density-1.0), 1.0-5.0*fabs(1.0-density), 5.0*(1.0-density));
+			}
+			DrawCircle(ps.pos(i)[0], ps.pos(i)[1], ps.radius()/4.0);
+		}
+	}
+	
 	glutSwapBuffers();
+	
 }
 
 
@@ -337,6 +418,7 @@ void Pan(int dir){
 }
 
 void Zoom(int in){
+	printf("HI");
 	if(in){
 		modOriginZ += ZOOM_RATE;
 	} else{
