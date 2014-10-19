@@ -1,6 +1,7 @@
 #ifndef PARTICLE_H_
 #define PARTICLE_H_
 
+#include <array>
 #include <memory>
 #include <random>
 #include <vector>
@@ -85,12 +86,12 @@ class ParticleSystem {
   Real scorr_norm_;
   Real scorr_scale_;
   KernelEvaluator kernel_;
-  std::vector<Vec2> pos_;
-  std::vector<Vec2> predicted_pos_;
-  std::vector<Vec2> vel_;
-  std::vector<Real> density_;
-  std::vector<Vec2> accel_;
-  std::vector<ParticleFlagType> flag_;
+  std::array<Vec2, kMaxParticles> pos_;
+  std::array<Vec2, kMaxParticles> predicted_pos_;
+  std::array<Vec2, kMaxParticles> vel_;
+  std::array<Real, kMaxParticles> density_;
+  std::array<Vec2, kMaxParticles> accel_;
+  std::array<ParticleFlagType, kMaxParticles> flag_;
   std::vector<ParticleIDType> available_particles_;
 
   Real grid_delta_;

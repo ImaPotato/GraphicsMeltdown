@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <GL/glut.h>
 
-#include "world.h"
 #include "main.h"
 #include "quaternion.h"
 
@@ -13,8 +12,6 @@
 GLuint g_mainWnd;
 GLuint WinWidth  = 800;
 GLuint WinHeight = 800;
-
-World world;
 
 // UI Parameters
 #define ZOOM_RATE 1.0
@@ -37,11 +34,6 @@ point2d rightMouseDownPt = origin;
 // Panning/ Zooming/ Rotating Controls
 float downModOriginX = 0.0,  downModOriginY = 0.0,  downModOriginZ = 0.0;
 float leftSelectX = 0.0, leftSelectY = 0.0, leftSelectZ = 0.0;
-
-// Model Positioning
-float modOriginX = 0.0,  modOriginY = 0.0,  modOriginZ = 0.0; // Translation of model
-float xRot = 0.0, yRot = 0.0, zRot = 0.0; // Rotation of Model
-quaternion modRotation;
 
 // Laser
 float lasOriginX = 10.0, lasOriginY = -10.0, lasOriginZ = 100.0;
@@ -74,11 +66,6 @@ int main(int argc, char** argv)
     g_mainWnd = glutCreateWindow("Graphic Meltdown");
 
 	// Create Default World Object
-	world = World();
-	if(argc > 1)
-		world.LoadModel(argv[1]);
-	else
-		world.LoadDefaultModel();	
 	
     glutDisplayFunc(Display);
 	glutIdleFunc(Display);
@@ -256,7 +243,6 @@ void Display()
 		glRotatef(xRot, 0.0, 1.0, 0.0);
 		glRotatef(yRot, 1.0, 0.0, 0.0);
 		glRotatef(zRot, 0.0, 0.0, 1.0);
-		world.Draw();
 	glPopMatrix();
 
 	DrawLaser();
