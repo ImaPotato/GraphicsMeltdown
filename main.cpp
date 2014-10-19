@@ -94,12 +94,12 @@ int main(int argc, char** argv)
 	SetLight();
 	SetCamera();
 
-	ps.setCFMScale(0.01);
+	ps.setCFMScale(0.03);
 	ps.setSurfaceTension(0.0000008);
-	ps.AddParticles(SPHack::AABB(SPHack::Vec2(0.0, 0.0), SPHack::Vec2(0.3, 0.7)));
+	ps.AddParticles(SPHack::AABB(SPHack::Vec2(0.0, 0.0), SPHack::Vec2(0.25, 0.5)));
 	ps.InitDensity();
 	ps.Clear();
-	ps.AddParticles(SPHack::AABB(SPHack::Vec2(0.0, 0.0), SPHack::Vec2(0.3, 0.7)));
+	ps.AddParticles(SPHack::AABB(SPHack::Vec2(0.0, 0.0), SPHack::Vec2(0.25, 0.5)));
 	
 	
     glutMainLoop();
@@ -254,7 +254,7 @@ void SetCamera()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	gluLookAt(0.25, 0.25, 1.0, 0.25, 0.25, 0.0, 0.0, 1.0, 0.0); 
+	gluLookAt(0.4, 0.4, 2.0, 0.4, 0.4, 0.0, 0.0, 1.0, 0.0); 
 }
 
 // Set Light
@@ -325,7 +325,7 @@ void Display()
 			if (i == selected_particle) {
 				glColor3f(1.0, 1.0, 1.0);
 			} else {
-				glColor3f(5.0*(density-1.0), 1.0-5.0*fabs(1.0-density), 5.0*(1.0-density));
+				glColor3f(5.0*(density-1.0), 5.0*(1.0-density), 1.0-5.0*fabs(1.0-density));
 			}
 			DrawCircle(ps.pos(i)[0], ps.pos(i)[1], ps.radius()/4.0);
 		}
