@@ -43,10 +43,15 @@
 
 typedef float vec_float;
 
+void invertAb_Quat();
+float* getInverseQuat();
+
 class vec // simple 3D vector class
 {
   public:
     vec_float x,y,z;
+
+
 
     vec() {}
     vec( vec_float xx, vec_float yy, vec_float zz )
@@ -80,5 +85,6 @@ extern void arcball_rotate();
 extern void arcball_reset();
 extern void arcball_start(int mx, int my);
 extern void arcball_move(int mx, int my);
+extern vec arcball_getEyeDirection();
 
 #endif

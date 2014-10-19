@@ -92,10 +92,10 @@ void Particle::calculateNewPosition(){
 	*/
 	if(y<OCTREE_SIZE / 3){
 		y=OCTREE_SIZE / 3;
-		vy = std::max(-0.99 * vy, vy * 0.99);
+		vy = std::max(-1.0 * vy, vy * 1.0);
 	}else if(y >= OCTREE_SIZE){
 		y= OCTREE_SIZE - 1;
-		vy = std::min(-0.99*vy, vy*0.99);
+		vy = std::min(-1.0*vy, vy*1.0);
 	}
 	/*
 	if(z<0){

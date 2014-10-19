@@ -88,7 +88,10 @@ void World::LoadDefaultModel(){
 
 // UPDATING MODEL
 void World::UpdateModel(){
+
+
 	//printf("\n\n\nBegin UpdateModel\n");
+	readyLaserForCollisions();
 
 	Octree<Particle> buffer(OCTREE_SIZE, NULL_PARTICLE);
 
@@ -117,6 +120,7 @@ void World::UpdateModel(){
 							else{
 								isOnOutside = true;
 							}
+							intersectLaser( p.GetX(), p.GetY(), p.GetZ()); // TODO Please don't remove this
 						}
 					}
 				}

@@ -7,8 +7,15 @@
 
 
 #include "arcball.h"
+
+
+
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
 #include <GL/glut.h>
 
+GLfloat ab_quat_inverse[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 GLfloat ab_quat[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 GLfloat ab_last[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 GLfloat ab_next[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
@@ -167,6 +174,10 @@ static vec planar_coords(GLdouble mx, GLdouble my)
   return vec(d*ab_up,d*ab_out,0.0);
 }
 
+vec arcball_getEyeDirection(){
+	  return ab_eye;
+ }
+
 // reset the arcball
 void arcball_reset()
 {
@@ -227,3 +238,129 @@ void arcball_move(int mx, int my)
     quatnext(ab_quat,ab_last,ab_next);
   }
 }
+
+void invertAb_Quat()
+{
+	printf("ab_quat: [%f %f %f %f] [%f %f %f %f] [%f %f %f %f] [%f %f %f %f]\n", ab_quat[0], ab_quat[1], ab_quat[2], ab_quat[3],
+			ab_quat[4], ab_quat[5], ab_quat[6] , ab_quat[7] , ab_quat[8], ab_quat[9], ab_quat[10] , ab_quat[11], ab_quat[12], ab_quat[13], ab_quat[14] , ab_quat[15]  );
+
+    		ab_quat_inverse[0] = ab_quat[5]  * ab_quat[10] * ab_quat[15] -
+             ab_quat[5]  * ab_quat[11] * ab_quat[14] -
+             ab_quat[9]  * ab_quat[6]  * ab_quat[15] +
+             ab_quat[9]  * ab_quat[7]  * ab_quat[14] +
+             ab_quat[13] * ab_quat[6]  * ab_quat[11] -
+             ab_quat[13] * ab_quat[7]  * ab_quat[10];
+
+    ab_quat_inverse[4] = -ab_quat[4]  * ab_quat[10] * ab_quat[15] +
+              ab_quat[4]  * ab_quat[11] * ab_quat[14] +
+              ab_quat[8]  * ab_quat[6]  * ab_quat[15] -
+              ab_quat[8]  * ab_quat[7]  * ab_quat[14] -
+              ab_quat[12] * ab_quat[6]  * ab_quat[11] +
+              ab_quat[12] * ab_quat[7]  * ab_quat[10];
+
+    ab_quat_inverse[8] = ab_quat[4]  * ab_quat[9] * ab_quat[15] -
+             ab_quat[4]  * ab_quat[11] * ab_quat[13] -
+             ab_quat[8]  * ab_quat[5] * ab_quat[15] +
+             ab_quat[8]  * ab_quat[7] * ab_quat[13] +
+             ab_quat[12] * ab_quat[5] * ab_quat[11] -
+             ab_quat[12] * ab_quat[7] * ab_quat[9];
+
+    ab_quat_inverse[12] = -ab_quat[4]  * ab_quat[9] * ab_quat[14] +
+               ab_quat[4]  * ab_quat[10] * ab_quat[13] +
+               ab_quat[8]  * ab_quat[5] * ab_quat[14] -
+               ab_quat[8]  * ab_quat[6] * ab_quat[13] -
+               ab_quat[12] * ab_quat[5] * ab_quat[10] +
+               ab_quat[12] * ab_quat[6] * ab_quat[9];
+
+    ab_quat_inverse[1] = -ab_quat[1]  * ab_quat[10] * ab_quat[15] +
+              ab_quat[1]  * ab_quat[11] * ab_quat[14] +
+              ab_quat[9]  * ab_quat[2] * ab_quat[15] -
+              ab_quat[9]  * ab_quat[3] * ab_quat[14] -
+              ab_quat[13] * ab_quat[2] * ab_quat[11] +
+              ab_quat[13] * ab_quat[3] * ab_quat[10];
+
+    ab_quat_inverse[5] = ab_quat[0]  * ab_quat[10] * ab_quat[15] -
+             ab_quat[0]  * ab_quat[11] * ab_quat[14] -
+             ab_quat[8]  * ab_quat[2] * ab_quat[15] +
+             ab_quat[8]  * ab_quat[3] * ab_quat[14] +
+             ab_quat[12] * ab_quat[2] * ab_quat[11] -
+             ab_quat[12] * ab_quat[3] * ab_quat[10];
+
+    ab_quat_inverse[9] = -ab_quat[0]  * ab_quat[9] * ab_quat[15] +
+              ab_quat[0]  * ab_quat[11] * ab_quat[13] +
+              ab_quat[8]  * ab_quat[1] * ab_quat[15] -
+              ab_quat[8]  * ab_quat[3] * ab_quat[13] -
+              ab_quat[12] * ab_quat[1] * ab_quat[11] +
+              ab_quat[12] * ab_quat[3] * ab_quat[9];
+
+    ab_quat_inverse[13] = ab_quat[0]  * ab_quat[9] * ab_quat[14] -
+              ab_quat[0]  * ab_quat[10] * ab_quat[13] -
+              ab_quat[8]  * ab_quat[1] * ab_quat[14] +
+              ab_quat[8]  * ab_quat[2] * ab_quat[13] +
+              ab_quat[12] * ab_quat[1] * ab_quat[10] -
+              ab_quat[12] * ab_quat[2] * ab_quat[9];
+
+    ab_quat_inverse[2] = ab_quat[1]  * ab_quat[6] * ab_quat[15] -
+             ab_quat[1]  * ab_quat[7] * ab_quat[14] -
+             ab_quat[5]  * ab_quat[2] * ab_quat[15] +
+             ab_quat[5]  * ab_quat[3] * ab_quat[14] +
+             ab_quat[13] * ab_quat[2] * ab_quat[7] -
+             ab_quat[13] * ab_quat[3] * ab_quat[6];
+
+    ab_quat_inverse[6] = -ab_quat[0]  * ab_quat[6] * ab_quat[15] +
+              ab_quat[0]  * ab_quat[7] * ab_quat[14] +
+              ab_quat[4]  * ab_quat[2] * ab_quat[15] -
+              ab_quat[4]  * ab_quat[3] * ab_quat[14] -
+              ab_quat[12] * ab_quat[2] * ab_quat[7] +
+              ab_quat[12] * ab_quat[3] * ab_quat[6];
+
+    ab_quat_inverse[10] = ab_quat[0]  * ab_quat[5] * ab_quat[15] -
+              ab_quat[0]  * ab_quat[7] * ab_quat[13] -
+              ab_quat[4]  * ab_quat[1] * ab_quat[15] +
+              ab_quat[4]  * ab_quat[3] * ab_quat[13] +
+              ab_quat[12] * ab_quat[1] * ab_quat[7] -
+              ab_quat[12] * ab_quat[3] * ab_quat[5];
+
+    ab_quat_inverse[14] = -ab_quat[0]  * ab_quat[5] * ab_quat[14] +
+               ab_quat[0]  * ab_quat[6] * ab_quat[13] +
+               ab_quat[4]  * ab_quat[1] * ab_quat[14] -
+               ab_quat[4]  * ab_quat[2] * ab_quat[13] -
+               ab_quat[12] * ab_quat[1] * ab_quat[6] +
+               ab_quat[12] * ab_quat[2] * ab_quat[5];
+
+    ab_quat_inverse[3] = -ab_quat[1] * ab_quat[6] * ab_quat[11] +
+              ab_quat[1] * ab_quat[7] * ab_quat[10] +
+              ab_quat[5] * ab_quat[2] * ab_quat[11] -
+              ab_quat[5] * ab_quat[3] * ab_quat[10] -
+              ab_quat[9] * ab_quat[2] * ab_quat[7] +
+              ab_quat[9] * ab_quat[3] * ab_quat[6];
+
+    ab_quat_inverse[7] = ab_quat[0] * ab_quat[6] * ab_quat[11] -
+             ab_quat[0] * ab_quat[7] * ab_quat[10] -
+             ab_quat[4] * ab_quat[2] * ab_quat[11] +
+             ab_quat[4] * ab_quat[3] * ab_quat[10] +
+             ab_quat[8] * ab_quat[2] * ab_quat[7] -
+             ab_quat[8] * ab_quat[3] * ab_quat[6];
+
+    ab_quat_inverse[11] = -ab_quat[0] * ab_quat[5] * ab_quat[11] +
+               ab_quat[0] * ab_quat[7] * ab_quat[9] +
+               ab_quat[4] * ab_quat[1] * ab_quat[11] -
+               ab_quat[4] * ab_quat[3] * ab_quat[9] -
+               ab_quat[8] * ab_quat[1] * ab_quat[7] +
+               ab_quat[8] * ab_quat[3] * ab_quat[5];
+
+    ab_quat_inverse[15] = ab_quat[0] * ab_quat[5] * ab_quat[10] -
+              ab_quat[0] * ab_quat[6] * ab_quat[9] -
+              ab_quat[4] * ab_quat[1] * ab_quat[10] +
+              ab_quat[4] * ab_quat[2] * ab_quat[9] +
+              ab_quat[8] * ab_quat[1] * ab_quat[6] -
+              ab_quat[8] * ab_quat[2] * ab_quat[5];
+
+}
+
+float* getInverseQuat(){
+	return ab_quat_inverse;
+
+}
+
+

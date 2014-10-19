@@ -50,6 +50,9 @@
 #define MIN_TEMPERATURE -273
 #define DEF_TEMPERATURE 20 // Default temperature
 
+// Global Functions
+void intersectLaser(double, double, double);
+void readyLaserForCollisions();
 
 // Define Basic Structures
 struct G308_Point {
@@ -58,6 +61,11 @@ struct G308_Point {
 	float z;
 };
 
+typedef struct Point {
+	double x;
+	double y;
+	double z;
+} Point;
 struct G308_RGBA {
 	float r;
 	float g;
