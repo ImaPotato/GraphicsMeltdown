@@ -1,33 +1,116 @@
+#ifndef PARTICLE_H_
+#define PARTICLE_H_
 
-#include "define.h"
+#include <memory>
+#include <random>
 #include <vector>
-#include <GL/glut.h>
 
-class Particle {
+#include "aabb.h"
+#include "kernels.h"
+#include "math.h"
+#include "particle_types.h"
 
-public:
-	Particle();
-	Particle(float x, float y, float z, float temperature, float vx, float vy, float vz);
-	void Draw();
+namespace SPHack {
 
-	// Setters
-	void SetTemperature(float t);
+static const int kMaxParticles= 1 << 12;
 
-	// Getters
-	float GetTemperature();
-	float GetX();
-	float GetY();
-	float GetZ();
-	float GetVX();
-	float GetVY();
-	float GetVZ();
-	
-	
-	void calculateNewPosition();
-	void calculateForces(std::vector<Particle> neighbours);
+static const ParticleFlagType PARTICLE_FLAG_ACTIVE = 1 << 0;
 
-private:
-	float x, y, z; // Coords
-	float temperature; 
-	float vx, vy, vz; // Velocity
+struct PressureParticle {
+  Vec2 pos;
+  Vec2 pos_delta;
+
+  ParticleIDType id;
+
+  Real lambda;
+  Real density;
+  Real cj_grad_norm_squared_sum;
+  Vec2 ci_grad_sum;
 };
+
+class ParticleSystem {
+ public:
+  ParticleSystem(const AABB& bounds, Real radius);
+
+  void AddParticles(const AABB& region, int max=-1);
+
+  void Step(Real dt, int substeps=2, int pressure_iters=4);
+
+  bool isActive(ParticleIDType pid) const { return (flag_[pid] & PARTICLE_FLAG_ACTIVE) != 0; }
+  Vec2 pos(ParticleIDType pid) const { return pos_[pid]; }
+  Vec2 predicted_pos(ParticleIDType pid) const { return predicted_pos_[pid]; }
+  Real radius() const { return radius_; }
+  int size() const { return kMaxParticles; }
+  const AABB& bounds() const { return bounds_; }
+  Real density(ParticleIDType pid) const { return density_[pid]; }
+  Real accelMagnitude(ParticleIDType pid) const { return accel_[pid].norm(); }
+
+  void setGravity(const Vec2& gravity) { gravity_ = gravity; }
+
+  void InitDensity();
+
+  void Clear();
+
+  // good values for this are ~0.01-0.05
+  void setCFMScale(Real scale) { cfm_scale_ = scale; }
+
+  // good values for this constant are pretty tiny
+  void setSurfaceTension(Real tension) { scorr_scale_ = -tension; }
+
+ private:
+  bool CreateParticle(const Vec2& pos, const Vec2& vel);
+
+  void ApplyForces(Real dt);
+  void PredictPositions(Real dt);
+  void UpdateVelocities(Real dt); 
+  void CommitPositions();
+
+  void BuildGrid();
+  void SubstepResetGrid();
+  void AccumulateLambdaData(PressureParticle& pi, PressureParticle& pj);
+  void CalculateLambdaOnGrid();
+  void AccumulatePressureDelta(PressureParticle& pi, PressureParticle& pj);
+  void CalculatePressureDeltaOnGrid();
+  void ApplyPressureDeltaOnGrid();
+  void EnforceBoundariesOnGrid();
+  void CopyPositionsFromGrid();
+  void ApplyViscosityOnGrid(Real dt);
+
+  inline int CellID(int x, int y) const { return y*grid_width_ + x; }
+
+  AABB bounds_;
+
+  Real radius_;
+  Real radius2_;
+  Real scorr_norm_;
+  Real scorr_scale_;
+  KernelEvaluator kernel_;
+  std::vector<Vec2> pos_;
+  std::vector<Vec2> predicted_pos_;
+  std::vector<Vec2> vel_;
+  std::vector<Real> density_;
+  std::vector<Vec2> accel_;
+  std::vector<ParticleFlagType> flag_;
+  std::vector<ParticleIDType> available_particles_;
+
+  Real grid_delta_;
+  std::vector<std::vector<PressureParticle>> grid_;
+  int grid_width_;
+  int grid_height_;
+
+  // cfm_epsilon_ = cfm_scale_ / density_inv_
+  Real cfm_scale_;
+  Real cfm_epsilon_;
+  Real density_inv_;
+
+  Vec2 gravity_;
+
+  Real boundary_margin_;
+
+  std::mt19937 random_;
+  std::uniform_real_distribution<> jitter_dist_;
+};
+  
+}  // namespace SPHack
+
+#endif  // PARTICLE_H_

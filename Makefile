@@ -6,7 +6,7 @@ LDPATH = -Wl,-R/usr/pkg/lib
 RM = rm
 all: Ass2
 
-Ass2: world.o particle.o main.o
+Ass2: kernels.o particle.o main.o 
 	$(CC) -o $@ $^ -lm -lGL -lGLU -lglut $(LPATH)
 	
 .cpp.o: 
